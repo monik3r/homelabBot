@@ -1,2 +1,2 @@
-discord.py
-pyombi
+discord.py==1.2.5
+pyombi==0.1.10

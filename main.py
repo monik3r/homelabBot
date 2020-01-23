@@ -6,9 +6,10 @@ import discord, json, pyombi
 
 # Set up Ombi stuff
 ombi = pyombi.Ombi(
-    ssl=True,
+    ssl=False,
     host=getenv("ombiHost"),
-    port = "443",
+    #port = "443",
+    port=3579,
     username = getenv("ombiUsername"),
     api_key= getenv("ombiKey")
 )
@@ -24,16 +25,19 @@ bot = Bot(command_prefix='!')
 
 @bot.command(pass_context=True)
 async def addrole(ctx, role: discord.Role):
+    """Give yourself a role"""
     member = ctx.message.author
     await member.add_roles(role)
 
 @bot.command(pass_context=True)
 async def removerole(ctx, role: discord.Role):
+    """Remove one of your roles"""
     member = ctx.message.author
     await member.remove_roles(role)
 
 @bot.command(pass_context=True)
 async def request(ctx, desire, title):
+    """Request a show, i.e.: !request tv ${SHOW} or !request movie ${TITLE}"""
     member = ctx.message.author
     channel = ctx.message.channel
 
@@ -59,13 +63,13 @@ async def request(ctx, desire, title):
                     return False
 
             whichShow = await bot.wait_for('message', check=check, timeout=30.0)
-            
+
             if whichShow is None:
                 await channel.send("Request timed out, yell at andrew if this is too short (if you're seeing this it probably is :crab: )")
             else:
                 imgUrl = "https://image.tmdb.org/t/p/w500" + res[int(whichShow.content)]["posterPath"]
                 await channel.send("Is this the right movie? (y/n) \n" + imgUrl)
-                
+
                 def checkYes(m):
                     if m.content == 'y' or m.content == 'n':
                         return True
@@ -80,7 +84,6 @@ async def request(ctx, desire, title):
                 elif(yesOrNo.content) == 'n':
                     await channel.send("F, sorry fam :'(")
 
-            #print(json.dumps(res))
         elif(desire == 'tv'):
             res = ombi.search_tv(title)
             printyprint = "Here are the top 7 results:\n```\n"
@@ -98,13 +101,13 @@ async def request(ctx, desire, title):
                     return False
 
             whichShow = await bot.wait_for('message', check=check, timeout=30.0)
-            
+
             if whichShow is None:
                 await channel.send("Request timed out, yell at andrew if this is too short (if you're seeing this it probably is :crab: )")
             else:
                 imgUrl = res[int(whichShow.content)]["banner"]
                 await channel.send("Is this the right show? (y/n) \n" + imgUrl)
-                
+
                 def checkYes(m):
                     if m.content == 'y' or m.content == 'n':
                         return True
@@ -120,9 +123,5 @@ async def request(ctx, desire, title):
                     await channel.send("F, sorry fam :'(")
     else:
         await channel.send("You don't have the right permissions! Check out `!addrole Videos`")
-
-@bot.command(pass_context=True)
-async def wgGen(ctx, desire, title):
-    await channel.send("This doesn't quite work yet, tomorrow though! Also need to update firewall off of roles.")
 
 bot.run(getenv("discordKey"))
